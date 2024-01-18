@@ -10,12 +10,11 @@ import {
   navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu"
 import Link from "next/link"
-import { Button } from "../ui/button"
 
 
 export default function TopBar() {
   return (
-    <div className="py-1 px-8 flex items-center gap-10 max-w-screen-2xl mx-auto">
+    <div className="py-1 px-8 flex items-center gap-10 max-w-screen-2xl mx-auto bg-white">
       <div className="font-bold text-sm">
         PAWN
       </div>

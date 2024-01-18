@@ -15,7 +15,7 @@ export default function PageWrapper({ children }: {
   const [active, setActive] = useState<boolean>(false);
 
   return (
-    <main className={`font-sans ${inter.variable}`}>
+    <main className={`min-h-screen font-sans ${inter.variable}`}>
       <TopBar />
       {
         !active ?
