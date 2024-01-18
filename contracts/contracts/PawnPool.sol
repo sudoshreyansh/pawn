@@ -33,9 +33,8 @@ contract PawnPool is Ownable {
     uint256 sanctionedAmount;
     uint256 sanctionedPremium;
     uint256 requestTimestamp;
-    uint256 approveTimestamp;
     uint256 expiry;
-    uint256 index;
+    uint256 startIndex;
   }
 
   mapping (uint256 => Loan) internal _loans;
@@ -70,6 +69,7 @@ contract PawnPool is Ownable {
 
     IERC721(collateralTokenAddress).safeTransferFrom(msg.sender, address(_receiptToken), collateralTokenId);
     _receiptToken.mint(loanId, msg.sender);
+    _bidsManager.initializeLoan(loanId, principal);
 
     _loans[loanId] = Loan(
       LoanStatus.Requested,
@@ -79,11 +79,12 @@ contract PawnPool is Ownable {
         collateralTokenId
       ),
       principal,
-      0,
       premium,
-      block.timestamp,
       0,
-      expiry
+      0,
+      block.timestamp,
+      expiry,
+      1
     );
 
     emit LoanRequested(msg.sender, _loans[loanId]);
@@ -102,7 +103,7 @@ contract PawnPool is Ownable {
   }
 
   function placeBid( uint256 loanId ) external {
-
+    
   }
 
   // function cancelLoan ( uint256 loanId ) external {
