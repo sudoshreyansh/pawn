@@ -18,7 +18,7 @@ export type Token = {
 }
 
 export const useTokenData = (address: string, id: string, chain: string) => {
-  const { data, error, isLoading } = useSWR(`https://api.opensea.io/api/v2/chain/${chain}/contract/${address}/nfts/${id}`, fetcher)
+  const { data, error, isLoading } = useSWR(`https://testnets-api.opensea.io/api/v2/chain/${chain}/contract/${address}/nfts/${id}`, fetcher)
  
   return {
     data: data as Token,
@@ -28,10 +28,11 @@ export const useTokenData = (address: string, id: string, chain: string) => {
 }
 
 export const useAccountTokensData = (address: string, chain: string) => {
-  const { data, error, isLoading } = useSWR(`https://api.opensea.io/api/v2/chain/${chain}/account/${address}/nfts`, fetcher)
+  const { data, error, isLoading } = useSWR(`https://testnets-api.opensea.io/api/v2/chain/${chain}/account/${address}/nfts`, fetcher)
+  console.log(data);
  
   return {
-    data: data.nfts as Token[],
+    data: data?.nfts as Token[],
     isLoading,
     isError: error
   }
