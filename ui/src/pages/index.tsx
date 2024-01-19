@@ -5,7 +5,7 @@ import { CheckIcon } from "@radix-ui/react-icons"
 export default function Home() {
   return (
     <PageWrapper>
-      <div className='px-12 mb-16'>
+      <div className='px-12 mb-12 mt-4'>
         <div className='text-3xl font-bold'>
           PAWN
         </div>

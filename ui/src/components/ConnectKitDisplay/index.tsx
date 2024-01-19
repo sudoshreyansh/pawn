@@ -3,18 +3,22 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { Skeleton } from '../ui/skeleton'
-import { Button } from '../ui/button'
 import { ConnectWalletButton } from "../ConnectWalletButton";
 
 export default function ConnectKitDisplay({ children }: {
   children: ReactNode
 }) {
   const { isConnected } = useAccount();
+  const [ active, setActive ] = useState(false);
+
+  useEffect(() => {
+    setActive(true);
+  }, []);
 
   return (
-    <>
+    <div>
       {
-        !isConnected ?
+        !isConnected || !active ?
         <div className="min-h-[80vh] flex items-center justify-center">
           <div className="flex flex-col items-center gap-y-4 text-center">
             <div className="space-y-2">
@@ -33,6 +37,6 @@ export default function ConnectKitDisplay({ children }: {
         </>
       }
 
-    </>
+    </div>
   )
 }

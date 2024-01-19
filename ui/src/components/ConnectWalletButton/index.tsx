@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 export const ConnectWalletButton = () => {
   return (
     <ConnectKitButton.Custom>
-      {({ isConnected, isConnecting, show, hide, address, ensName, chain }) => {
+      {({ isConnecting, show }) => {
         return (
           <Button onClick={show} {...(isConnecting && {disabled: true})}>
             {isConnecting ? "Connecting..." : "Connect Wallet"}

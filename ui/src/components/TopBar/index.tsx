@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/navigation-menu"
 import Link from "next/link"
 import { Avatar, ChainIcon, ConnectKitButton } from "connectkit";
-import { sepolia } from "wagmi";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 
@@ -47,13 +46,13 @@ export default function TopBar() {
         </NavigationMenu>
       </div>
       <ConnectKitButton.Custom>
-        {({isConnected, truncatedAddress, address, ensName, show}) => {
+        {({isConnected, truncatedAddress, address, ensName, show, chain}) => {
           if ( !isConnected ) return <></>;
 
           return (
             <div className="flex">
               <Button variant="outline" onClick={show} className="flex text-sm items-center gap-2 ml-2">
-                <ChainIcon id={sepolia.id} size={20} />
+                <ChainIcon id={chain!.id} size={20} />
                 <Separator orientation="vertical" className="mx-0.5" />
                 <Avatar {...(ensName ? {name: ensName} : { address })} size={20} />
                 <div>

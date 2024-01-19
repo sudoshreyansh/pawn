@@ -9,7 +9,7 @@ const config = createConfig(
     walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_ID!,
     appName: "Pawn",
     chains: [sepolia]
-  }),
+  })
 );
 
 export default function ConnectKitProvider({ children }: {
