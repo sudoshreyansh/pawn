@@ -1,24 +1,25 @@
+'use client';
+
 import {
   NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport,
   navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu"
 import Link from "next/link"
-
+import { Avatar, ChainIcon, ConnectKitButton } from "connectkit";
+import { sepolia } from "wagmi";
+import { Button } from "../ui/button";
+import { Separator } from "../ui/separator";
 
 export default function TopBar() {
   return (
-    <div className="py-1 px-8 flex items-center gap-10 max-w-screen-2xl mx-auto bg-white">
+    <div className="py-2 px-8 flex items-center max-w-screen-2xl mx-auto bg-white">
       <div className="font-bold text-sm">
         PAWN
       </div>
-      <div className="grow">
+      <div className="grow ml-12">
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
@@ -45,11 +46,24 @@ export default function TopBar() {
           </NavigationMenuList>
         </NavigationMenu>
       </div>
-      <div>
-        {
-          // todo profile
-        }
-      </div>
+      <ConnectKitButton.Custom>
+        {({isConnected, truncatedAddress, address, ensName, show}) => {
+          if ( !isConnected ) return <></>;
+
+          return (
+            <div className="flex">
+              <Button variant="outline" onClick={show} className="flex text-sm items-center gap-2 ml-2">
+                <ChainIcon id={sepolia.id} size={20} />
+                <Separator orientation="vertical" className="mx-0.5" />
+                <Avatar {...(ensName ? {name: ensName} : { address })} size={20} />
+                <div>
+                  { ensName ? ensName : truncatedAddress }
+                </div>
+              </Button>
+            </div>
+          )
+        }}
+      </ConnectKitButton.Custom>
     </div>
   )
 }
