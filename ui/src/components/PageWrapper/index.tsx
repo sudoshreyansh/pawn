@@ -7,6 +7,7 @@ import ConnectKitDisplay from '../ConnectKitDisplay'
 const inter = Inter({
   subsets: ['latin'],
   variable: "--font-sans",
+  adjustFontFallback: false
 })
 
 export default function PageWrapper({ children }: {
