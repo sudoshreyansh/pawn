@@ -10,7 +10,7 @@ export default function LoanMarketCard({ loan }: {
       <div className='w-48 h-48 bg-contain' style={{ backgroundImage: `url("${loan.token.image_url}")` }}></div>
       <div className="grow-1 py-4 px-8 flex flex-col justify-between items-start">
         <div className="text-sm">
-          <div className="text-2xl font-bold pb-2">{loan.token.name}</div>
+          <div className="text-xl font-bold pb-2">{loan.token.name}</div>
           <div className="">
             <span className="font-semibold">Required Funds: </span>
             <span className="">{formatWadToDecimal(loan.principal)} GHO</span>
