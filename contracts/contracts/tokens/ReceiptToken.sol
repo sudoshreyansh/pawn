@@ -14,9 +14,7 @@ contract ReceiptToken is Ownable, ERC721, IReceiptToken {
     _;
   }
 
-  constructor(
-    address poolAddress_
-  ) Ownable(msg.sender) ERC721("Pawn Loan Receipt", "PLR") {
+  constructor( address poolAddress_ ) Ownable(msg.sender) ERC721("Pawn Loan Receipt", "PLR") {
     _poolAddress = poolAddress_;
   }
 
@@ -24,20 +22,11 @@ contract ReceiptToken is Ownable, ERC721, IReceiptToken {
     _poolAddress = poolAddress_;
   }
 
-  function mint(
-    uint256 loanId,
-    address loanRecipient
-  ) onlyPool external {
+  function mint(uint256 loanId, address loanRecipient) onlyPool external {
     _mint(loanRecipient, loanId);
   }
 
-  function burn(
-    uint256 loanId,
-    address underlyingTokenAddress,
-    uint256 underlyingTokenId,
-    address underlyingRecipient
-  ) onlyPool external {
-    IERC721(underlyingTokenAddress).safeTransferFrom(address(this), underlyingRecipient, underlyingTokenId);
+  function burn(uint256 loanId) onlyPool external {
     _burn(loanId);
   }
 
