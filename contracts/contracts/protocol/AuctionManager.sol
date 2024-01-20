@@ -3,10 +3,11 @@ pragma solidity ^0.8.20;
 
 import "../base/OnlyPool.sol";
 import "../interfaces/IPawnPool.sol";
+import "../interfaces/IAuctionManager.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-contract AuctionManager is OnlyPool {
+contract AuctionManager is OnlyPool, IAuctionManager {
   struct Item {
     address _address;
     uint256 _id;
@@ -20,7 +21,7 @@ contract AuctionManager is OnlyPool {
   IERC20 _ghoToken;
 
   event NewToken(uint256 loanId, address tokenAddress, uint256 tokenId);
-  event NewBid(uint256 );
+  event NewBid(uint256 loanId, uint256 amount);
 
   constructor(address poolAddress_, address ghoTokenAddress_) OnlyPool(poolAddress_) {
     _ghoToken = IERC20(ghoTokenAddress_);
@@ -47,6 +48,7 @@ contract AuctionManager is OnlyPool {
     _items[loanId]._lastBidAddress = msg.sender;
     _items[loanId]._lastBidAmount = amount;
     _items[loanId]._lastBidTimestamp = block.timestamp;
+    emit NewBid(loanId, amount);
   }
 
   function claim(uint256 loanId) external {

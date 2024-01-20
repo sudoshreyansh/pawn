@@ -110,7 +110,7 @@ contract BidsManager is IBidsManager {
   }
 
   function getLoanPremiumIndex(uint256 loanId) view external returns (uint256) {
-    return (_loans[uint128(loanId)].cummulativePremiumIndex * 1e24);
+    return (_loans[uint128(loanId)].cummulativePremiumIndex * 1e26);
   }
 
   function isLoanFulfilled(uint256 loanId) view external returns (bool) {

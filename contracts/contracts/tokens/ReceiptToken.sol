@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "../base/OnlyPool.sol";
 import "../interfaces/IReceiptToken.sol";
+import "../interfaces/IPawnPool.sol";
 
 contract ReceiptToken is OnlyPool, ERC721, IReceiptToken {
   constructor( address poolAddress_ )
@@ -19,6 +20,10 @@ contract ReceiptToken is OnlyPool, ERC721, IReceiptToken {
     _burn(loanId);
   }
 
+  function transferFrom(address from, address to, uint256 tokenId) public override(ERC721, IERC721) {
+    IPawnPool(_poolAddress).isReceiptTransferAllowed(tokenId);
+    super.transferFrom(from, to, tokenId);
+  }
+
   // metadata
-  // transfer should update pool too
 }
