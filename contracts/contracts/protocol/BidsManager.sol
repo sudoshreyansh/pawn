@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "../interfaces/IBidsManager.sol";
+import "hardhat/console.sol";
 
 contract BidsManager is IBidsManager {
   struct Loan {
@@ -13,14 +14,8 @@ contract BidsManager is IBidsManager {
     uint256[2] bidBitmasks;
   }
 
-  struct BidBucket {
-    uint128 loan;
-    uint16 premium;
-    uint112 liquidity;
-  }
-
   mapping(uint128 => Loan) _loans;
-  mapping(uint128 => mapping(uint16 => BidBucket)) _bidBuckets;
+  mapping(uint128 => mapping(uint16 => uint112)) _bidBuckets;
   mapping(uint256 => uint112) _bidAmounts;
 
   address _poolAddress;
@@ -30,20 +25,18 @@ contract BidsManager is IBidsManager {
     _;
   }
 
-  // event BidPlaced(address indexed bidder, uint256 indexed loanId, uint256 indexed bidId, uint256 premium, uint256 amount);
-
   constructor(address poolAddress_) {
     _poolAddress = poolAddress_;
   }
 
   function initializeLoan(uint256 loanId, uint256 amount, uint256 maxPremium) external {
-    uint128 transformedLoanId = _transformLoanId(loanId);
-    uint112 transformedAmount = _transformAmount(amount);
-    uint16 transformedMaxPremium = _transformPremium(maxPremium);
+    uint128 loanId_ = _transformLoanId(loanId);
+    uint112 amount_ = _transformAmount(amount);
+    uint16 maxPremium_ = _transformPremium(maxPremium);
 
-    _loans[transformedLoanId] = Loan(
-      transformedAmount,
-      transformedMaxPremium,
+    _loans[loanId_] = Loan(
+      amount_,
+      maxPremium_,
       0,
       0,
       0,
@@ -56,14 +49,16 @@ contract BidsManager is IBidsManager {
     uint112 amount_ = _transformAmount(amount);
     uint16 premium_ = _transformPremium(premium);
 
-    uint112 bucketLiquidity = _bidBuckets[loanId_][premium_].liquidity;
+    uint112 bucketLiquidity = _bidBuckets[loanId_][premium_];
     uint256 bidId = _bidId(loanId_, premium_, bucketLiquidity);
 
+    _bidAmounts[bidId] = amount_;
+
     if ( bucketLiquidity == 0 ) {
-      _loans[loanId_].bidBitmasks[premium_ / 256] &= (uint256(1) << premium_ % 256);
+      _loans[loanId_].bidBitmasks[premium_ / 256] |= (uint256(1) << (premium_ % 256));
     }
 
-    _bidBuckets[loanId_][premium_].liquidity += amount_;
+    _bidBuckets[loanId_][premium_] += amount_;
     _loans[loanId_].cummulativeBidAmount += amount_;
 
     uint256 lastBidId = _loans[loanId_].lastAcceptedBidId;
@@ -82,24 +77,25 @@ contract BidsManager is IBidsManager {
     return bidId;
   }
   
+  // only allowed when bidding finished
   function getBidReturnAmount(uint256 bidId) view external returns (uint256) {
     (uint128 loanId, uint16 premium, uint112 bidStart) = _extractFromBidId(bidId);
     uint256 lastAcceptedBidId = _loans[loanId].lastAcceptedBidId;
     uint112 amountToReturn;
 
-    if ( lastAcceptedBidId == 0 || lastAcceptedBidId <= bidId ) {
+    if ( lastAcceptedBidId == 0 || lastAcceptedBidId <= bidId  ) {
       amountToReturn = _bidAmounts[bidId];
     } else {
       uint112 bidAmount = _bidAmounts[bidId];
       (, uint16 lastAcceptedPremium, uint112 lastAcceptedBidStart) = _extractFromBidId(lastAcceptedBidId);
 
       if ( premium != lastAcceptedPremium ) {
-        amountToReturn = bidAmount;
+        amountToReturn = 0;
       } else {
         uint112 bidSpread = lastAcceptedBidStart - bidStart;
 
-        if ( bidSpread > bidAmount ) amountToReturn = bidAmount;
-        else amountToReturn = bidSpread;
+        if ( bidSpread > bidAmount ) amountToReturn = 0;
+        else amountToReturn = bidAmount - bidSpread;
       }
     }
 
@@ -118,7 +114,7 @@ contract BidsManager is IBidsManager {
   }
 
   function isLoanFulfilled(uint256 loanId) view external returns (bool) {
-    return _loans[uint128(loanId)].cummulativeBidAmount >= _loans[uint128(loanId)].requestedAmount;
+    return _loans[uint128(loanId)].lastAcceptedBidId > 0;
   }
 
   function _transformLoanId ( uint256 id ) pure internal returns (uint128) {
@@ -150,7 +146,7 @@ contract BidsManager is IBidsManager {
     uint256 bidId = uint256(loanId);
     bidId = bidId << 128;
     bidId = bidId | amount;
-    bidId = bidId | (premium << 112);
+    bidId = bidId | (uint256(premium) << 112);
     return bidId;
   }
 
@@ -166,27 +162,29 @@ contract BidsManager is IBidsManager {
       lastBucketExcessAmount = 0;
     } else {
       lastBucketIndex = uint16(lastAcceptedBidId >> 112);
-      lastBucketExcessAmount = _bidBuckets[loanId][lastBucketIndex].liquidity - uint112(lastAcceptedBidId);
+      lastBucketExcessAmount = _bidBuckets[loanId][lastBucketIndex] - uint112(lastAcceptedBidId);
     }
 
     while ( lastBucketIndex >= 0 ) {
       if ( bidMask[lastBucketIndex / 256] & (uint256(1) << (lastBucketIndex % 256)) > 0 ) {
-        uint112 amountAvailableToRemove = _bidBuckets[loanId][lastBucketIndex].liquidity - lastBucketExcessAmount;
+        uint112 amountAvailableToRemove = _bidBuckets[loanId][lastBucketIndex] - lastBucketExcessAmount;
         if ( amountAvailableToRemove > amount ) {
-          premiumIndexToRemove += amount * _bidBuckets[loanId][lastBucketIndex].premium;
+          premiumIndexToRemove += amount * uint112(lastBucketIndex);
           lastBucketExcessAmount = amount + lastBucketExcessAmount;
+          amount = 0;
           break;
         }
 
-        premiumIndexToRemove += amountAvailableToRemove * _bidBuckets[loanId][lastBucketIndex].premium;
+        premiumIndexToRemove += amountAvailableToRemove * uint112(lastBucketIndex);
         amount -= amountAvailableToRemove;
         lastBucketExcessAmount = 0;
       }
 
+      require(lastBucketIndex > 0);
       lastBucketIndex--;
     }
 
-    _loans[loanId].lastAcceptedBidId = _bidId(loanId, lastBucketIndex, _bidBuckets[loanId][lastBucketIndex].liquidity - lastBucketExcessAmount);
+    _loans[loanId].lastAcceptedBidId = _bidId(loanId, lastBucketIndex, _bidBuckets[loanId][lastBucketIndex] - lastBucketExcessAmount);
     _loans[loanId].cummulativePremiumIndex -= premiumIndexToRemove;
   }
 }

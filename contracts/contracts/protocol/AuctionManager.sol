@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "../base/OnlyPool.sol";
+import "../interfaces/IPawnPool.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
@@ -26,19 +27,22 @@ contract AuctionManager is OnlyPool {
   }
 
   function list(uint256 loanId, address tokenAddress, uint256 tokenId) onlyPool external {
-    _items[loanId] = Item(tokenAddress, tokenId, block.timestamp, 0, 0, 0);
+    _items[loanId] = Item(tokenAddress, tokenId, block.timestamp, 0, 0, address(0));
     emit NewToken(loanId, tokenAddress, tokenId);
   }
 
   function bid(uint256 loanId, uint256 amount) external {
-    require(_items[loanId]._address != address(0));
-    require(block.timestamp >= _items[loanId]._listTimestamp + 1 days);
-    require(amount > _items[loanId]._lastBidAmount);
-    if ( _items[loanId]._lastBidTimestamp > 0 )
-      require(block.timestamp <= _items[loanId]._lastBidTimestamp + 1 hours);
+    Item memory item = _items[loanId];
+
+    require(item._address != address(0));
+    require(block.timestamp >= item._listTimestamp + 1 days);
+    require(amount > item._lastBidAmount);
+
+    if ( item._lastBidTimestamp > 0 )
+      require(block.timestamp <= item._lastBidTimestamp + 1 hours);
     
     _ghoToken.transferFrom(msg.sender, address(this), amount);
-    _ghoToken.transfer(_items[loanId]._lastBidAddress, _items[loanId]._lastBidAmount);
+    _ghoToken.transfer(item._lastBidAddress, item._lastBidAmount);
 
     _items[loanId]._lastBidAddress = msg.sender;
     _items[loanId]._lastBidAmount = amount;
@@ -46,12 +50,14 @@ contract AuctionManager is OnlyPool {
   }
 
   function claim(uint256 loanId) external {
-    require(_items[loanId]._lastBidAddress == msg.sender);
-    require(block.timestamp > _items[loanId]._lastBidTimestamp + 1 hours);
+    Item memory item = _items[loanId];
 
-    IERC721(_items[loanId]._address).transferFrom(address(this), msg.sender, _items[loanId]._id);
-    _ghoToken.transfer(_poolAddress, _items[loanId]._lastBidAmount);
-    _IPawnPool(_poolAddress).auctionComplete(loanId, _items[loanId]._lastBidAmount);
+    require(item._lastBidAddress == msg.sender);
+    require(block.timestamp > item._lastBidTimestamp + 1 hours);
+
+    IERC721(item._address).transferFrom(address(this), msg.sender, item._id);
+    _ghoToken.transfer(_poolAddress, item._lastBidAmount);
+    IPawnPool(_poolAddress).auctionComplete(loanId, item._lastBidAmount);
 
     delete _items[loanId];
   }
