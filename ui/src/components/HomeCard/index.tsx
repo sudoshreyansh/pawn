@@ -18,7 +18,7 @@ export default function HomeCard({
       <div className='text-xl font-bold'>
         { title }
       </div>
-      <div className='mt-6'>
+      <div className='mt-5'>
         { children }
       </div>
       <div className="flex justify-center">

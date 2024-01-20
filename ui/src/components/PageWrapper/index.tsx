@@ -19,7 +19,7 @@ export default function PageWrapper({ children }: {
         <main className={`min-h-screen font-sans ${inter.variable}`}>
           <TopBar />
           <ConnectKitDisplay>
-            <div className="px-8 max-w-screen-2xl mx-auto pt-6">
+            <div className="px-8 min-h-[90vh] max-w-screen-2xl mx-auto pt-6">
               { children }
             </div>
           </ConnectKitDisplay>
