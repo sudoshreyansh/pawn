@@ -1,6 +1,7 @@
 import { Inter } from 'next/font/google'
 import { ReactNode, useState } from 'react'
 import TopBar from '../TopBar'
+import Footer from '../Footer'
 import ConnectKitProvider from '@/components/ConnectKitProvider'
 import ConnectKitDisplay from '../ConnectKitDisplay'
 
@@ -22,6 +23,7 @@ export default function PageWrapper({ children }: {
               { children }
             </div>
           </ConnectKitDisplay>
+          <Footer />
         </main>
     </ConnectKitProvider>
   )

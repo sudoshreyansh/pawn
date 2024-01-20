@@ -1,4 +1,5 @@
 import useSWR from 'swr';
+import { Token } from './types';
 
 const fetcher = (uri: string) => fetch(uri, {
   headers: {
@@ -6,16 +7,6 @@ const fetcher = (uri: string) => fetch(uri, {
     'Accept': 'application/json'
   }
 }).then(res => res.json())
-
-export type Token = {
-  name: string;
-  description: string;
-  identifier: string;
-  contract: string;
-  collection: string;
-  opensea_url: string;
-  image_url: string;
-}
 
 export const useTokenData = (address: string, id: string, chain: string) => {
   const { data, error, isLoading } = useSWR(`https://testnets-api.opensea.io/api/v2/chain/${chain}/contract/${address}/nfts/${id}`, fetcher)
