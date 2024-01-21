@@ -22,35 +22,6 @@ contract PawnPool is Ownable, IPawnPool {
 
   uint256 internal _nextLoanId;
 
-  struct Asset {
-    address tokenAddress;
-    uint256 tokenId;
-  }
-
-  enum LoanStatus {
-    None,
-    Requested,
-    Collected,
-    Repayed,
-    UnderAuction,
-    Liquidated,
-    Cancelled
-  }
-
-  struct Loan {
-    LoanStatus status;
-    Asset collateral;
-    uint256 principal;
-    uint256 maxPremium;
-    uint256 requestTimestamp;
-    uint256 collectTimestamp;
-    uint256 repayTimestamp;
-    uint256 expiry;
-    uint256 startAaveDebtIndex;
-    uint256 endAaveDebtIndex;
-    uint256 liquidatedAmount;
-  }
-
   mapping (uint256 => Loan) internal _loans;
   mapping (address => mapping(uint256 => uint256)) internal _bids;
 
@@ -260,6 +231,21 @@ contract PawnPool is Ownable, IPawnPool {
   function isReceiptTransferAllowed ( uint256 loanId ) external view {
     require(_isBiddingOver(loanId));
     require(_loans[loanId].status == LoanStatus.Collected);
+  }
+
+  function getLoanDetails ( uint256 loanId ) external view returns (Loan memory loan) {
+    loan = _loans[loanId];
+  }
+
+  function getBidDetailsForLoan ( address user, uint256 loanId ) external view returns (uint256, uint256, uint256) {
+    if ( _bids[user][loanId] == 0 ) return (0, 0, 0);
+
+    (, uint256 premium, uint256 amount) = _bidsManager.getBid(_bids[user][loanId]);
+    return (_bids[user][loanId], premium, amount);
+  }
+
+  function getBidDetails ( uint256 bidId ) external view returns (uint256, uint256, uint256) {
+    return _bidsManager.getBid(bidId);
   }
 
   function _calculateRepayAmount(uint256 loanId) internal view returns (uint256) {
