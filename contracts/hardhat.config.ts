@@ -9,7 +9,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         url: process.env.ALCHEMY_URI!,
-        blockNumber: 19013000
+        blockNumber: 5123381
       }
     }
   }

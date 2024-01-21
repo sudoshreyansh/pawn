@@ -1,7 +1,7 @@
 import { USDC_CONTRACT_ADDRESS, USDC_HOLDER_ADDRESS } from "../utils/constants";
 import { network, viem } from "hardhat";
 
-export async function loadUSDC(receiver: string, amount: number) {
+export async function loadUSDC(receiver: string, amount: BigInt) {
   await network.provider.request({
     method: "hardhat_impersonateAccount",
     params: [USDC_HOLDER_ADDRESS],
@@ -16,7 +16,7 @@ export async function loadUSDC(receiver: string, amount: number) {
     }
   );
 
-  await usdcContract.write.transfer([receiver as `0x${string}`, BigInt(amount)]);
+  await usdcContract.write.transfer([receiver as `0x${string}`, amount.valueOf()]);
 
   await network.provider.request({
     method: "hardhat_stopImpersonatingAccount",

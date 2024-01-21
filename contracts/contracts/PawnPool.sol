@@ -10,6 +10,7 @@ import "./interfaces/IBidsManager.sol";
 import "./interfaces/ICreditToken.sol";
 import "./interfaces/IAuctionManager.sol";
 import "./interfaces/IPawnPool.sol";
+import "hardhat/console.sol";
 
 contract PawnPool is Ownable, IPawnPool {
   IReceiptToken internal _receiptToken;
@@ -67,12 +68,16 @@ contract PawnPool is Ownable, IPawnPool {
 
   function initialize(
     address receiptTokenAddress,
+    address creditTokenAddress,
     address bidsManagerAddress,
+    address auctionManagerAddress,
     address aavePoolAddress,
     address ghoTokenAddress
   ) onlyOwner external {
     _receiptToken = IReceiptToken(receiptTokenAddress);
+    _creditToken = ICreditToken(creditTokenAddress);
     _bidsManager = IBidsManager(bidsManagerAddress);
+    _auctionManager = IAuctionManager(auctionManagerAddress);
     _aavePool = IPool(aavePoolAddress);
     _ghoToken = IERC20(ghoTokenAddress);
   }
@@ -90,9 +95,9 @@ contract PawnPool is Ownable, IPawnPool {
     uint256 loanId = _nextLoanId;
     _nextLoanId += 1;
 
-    IERC721(collateralTokenAddress).safeTransferFrom(msg.sender, address(_receiptToken), collateralTokenId);
+    IERC721(collateralTokenAddress).transferFrom(msg.sender, address(this), collateralTokenId);
     _receiptToken.mint(loanId, msg.sender);
-    _bidsManager.initializeLoan(loanId, principal, premium);
+    _bidsManager.initializeLoan(loanId, premium, principal);
 
     _loans[loanId] = Loan(
       LoanStatus.Requested,

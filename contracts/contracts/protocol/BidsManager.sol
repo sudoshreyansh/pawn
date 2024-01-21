@@ -29,7 +29,7 @@ contract BidsManager is IBidsManager {
     _poolAddress = poolAddress_;
   }
 
-  function initializeLoan(uint256 loanId, uint256 amount, uint256 maxPremium) external {
+  function initializeLoan(uint256 loanId, uint256 maxPremium, uint256 amount) external {
     uint128 loanId_ = _transformLoanId(loanId);
     uint112 amount_ = _transformAmount(amount);
     uint16 maxPremium_ = _transformPremium(maxPremium);
@@ -44,7 +44,7 @@ contract BidsManager is IBidsManager {
     );
   }
 
-  function placeBid(uint256 loanId, uint256 amount, uint256 premium) onlyPool external returns (uint256) {
+  function placeBid(uint256 loanId, uint256 premium, uint256 amount) onlyPool external returns (uint256) {
     uint128 loanId_ = _transformLoanId(loanId);
     uint112 amount_ = _transformAmount(amount);
     uint16 premium_ = _transformPremium(premium);

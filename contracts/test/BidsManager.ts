@@ -10,18 +10,18 @@ describe("BidsManager", () => {
     const [address] = await wallet.getAddresses();
 
     const manager = await viem.deployContract("BidsManager", [address]);
-    await manager.write.initializeLoan([1n, 200n * WAD, 5n * RAY]);
+    await manager.write.initializeLoan([1n, 5n * RAY, 200n * WAD]);
     
-    const { result: bid1 } = await manager.simulate.placeBid([1n, 100n * WAD, 2n * RAY]);
-    await manager.write.placeBid([1n, 100n * WAD, 2n * RAY]);
+    const { result: bid1 } = await manager.simulate.placeBid([1n, 2n * RAY, 100n * WAD]);
+    await manager.write.placeBid([1n, 2n * RAY, 100n * WAD]);
     expect(await manager.read.isLoanFulfilled([1n])).to.false;
 
-    const { result: bid2 } = await manager.simulate.placeBid([1n, 100n * WAD, 1n * RAY]);
-    await manager.write.placeBid([1n, 100n * WAD, 1n * RAY]);
+    const { result: bid2 } = await manager.simulate.placeBid([1n, 1n * RAY, 100n * WAD]);
+    await manager.write.placeBid([1n, 1n * RAY, 100n * WAD]);
     expect(await manager.read.getLoanPremiumIndex([1n])).to.equal(BigInt(100*2 + 100*1) * RAY);
 
-    const { result: bid3 } = await manager.simulate.placeBid([1n, 50n * WAD, (5n * RAY) / 10n]);
-    await manager.write.placeBid([1n, 50n * WAD, (5n * RAY) / 10n]);
+    const { result: bid3 } = await manager.simulate.placeBid([1n, (5n * RAY) / 10n, 50n * WAD]);
+    await manager.write.placeBid([1n, (5n * RAY) / 10n, 50n * WAD]);
     expect(await manager.read.isLoanFulfilled([1n])).to.true;
     expect(await manager.read.getLoanPremiumIndex([1n])).to.equal(BigInt(100*1 + 50*2 + 5*5) * RAY);
 
