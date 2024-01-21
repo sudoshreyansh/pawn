@@ -8,6 +8,11 @@ const fetcher = (uri: string) => fetch(uri, {
   }
 }).then(res => res.json())
 
+export async function getTokenData(address: string, id: string, chain: string): Token {
+  const data = await fetcher(`https://testnets-api.opensea.io/api/v2/chain/${chain}/contract/${address}/nfts/${id}`);
+  return data as Token;
+}
+
 export const useTokenData = (address: string, id: string, chain: string) => {
   const { data, error, isLoading } = useSWR(`https://testnets-api.opensea.io/api/v2/chain/${chain}/contract/${address}/nfts/${id}`, fetcher)
  
