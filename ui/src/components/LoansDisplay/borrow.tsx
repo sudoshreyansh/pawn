@@ -1,15 +1,16 @@
 import { formatRayToDecimal, formatTimestampToString, formatWadToDecimal } from "@/lib/display";
 import { useLoansDataForUser } from "@/lib/loans";
-import { UpdateIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
+import { Skeleton } from "../ui/skeleton";
 
 export default function LoansDisplayForBorrow() {
   const { success, loans } = useLoansDataForUser();
 
   if ( !success ) {
     return (
-      <div className="pt-10 pb-4 flex items-center justify-center">
-        <UpdateIcon className="w-6 h-6 animate-spin" />
+      <div className="py-2">
+        <Skeleton className="w-60 h-4 mb-2" />
+        <Skeleton className="w-96 h-4" />
       </div>
     )
   }

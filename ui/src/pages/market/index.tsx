@@ -1,4 +1,5 @@
 import LoanMarketCard from '@/components/LoanMarketCard'
+import LoansDisplayForMarket from '@/components/LoansDisplay/market'
 import PageWrapper from '@/components/PageWrapper'
 import { WAD, RAY } from '@/lib/display'
 
@@ -9,7 +10,8 @@ export default function Market() {
         <div className='text-3xl font-bold'>
           Market
         </div>
-        <div className="grid grid-cols-2 gap-6 py-8">
+        <LoansDisplayForMarket />
+        {/* <div className="grid grid-cols-2 gap-6 py-8">
           {
             Array(9).fill(undefined).map(() => (
               <LoanMarketCard loan={{
@@ -27,7 +29,7 @@ export default function Market() {
               }} />
             ))
           }
-        </div>
+        </div> */}
       </div>
     </PageWrapper>
   )

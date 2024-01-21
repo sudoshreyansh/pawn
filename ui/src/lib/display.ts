@@ -1,6 +1,12 @@
 export const WAD = BigInt("1000000000000000000");
 export const RAY = BigInt("1000000000000000000000000000");
 
+export function formatStringToDecimal(num: string): string {
+  const decimal = num.slice(num.length-2);
+  const integer = num.slice(0, num.length-2);
+  return `${integer}.${decimal}`;
+}
+
 export function formatWadToDecimal(wad: BigInt, decimalPlaces = 2): string {
   const decimal = wad.valueOf() % WAD;
   const integer = wad.valueOf() / WAD;

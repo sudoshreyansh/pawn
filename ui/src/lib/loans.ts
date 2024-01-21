@@ -146,7 +146,7 @@ export function useLoansDataForMarket() {
   return data;
 }
 
-export function useLoanData({ loanId }: { loanId: string }) {
+export function useLoanData(loanId: string) {
   const { data: wallet, status } = useWalletClient();
   const client = usePublicClient();
   const [data, setData] = useState<LoansState>({ success: false });
