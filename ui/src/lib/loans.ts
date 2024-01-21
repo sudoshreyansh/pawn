@@ -1,19 +1,21 @@
 import { PublicClient, usePublicClient, useWalletClient } from "wagmi";
 import type { Bid, Loan } from "./types";
 import { useEffect, useState } from "react";
-import { PAWN_RECEIPT_ADDRESS } from "./address";
+import { RECEIPT_TOKEN_ADDRESS } from "./address";
 import { ReceiptTokenABI } from "./abi";
 import { getTokenData } from "./opensea";
 
 async function getLoanDetailsForUser ( publicClient: PublicClient, user: `0x${string}`, index: BigInt ) {
   const loan = await publicClient.readContract({
-    address: PAWN_RECEIPT_ADDRESS,
+    address: RECEIPT_TOKEN_ADDRESS,
     abi: ReceiptTokenABI,
     functionName: 'getDetailsForUser',
     args: [user, index.valueOf()]
   })
 
   const underlying = await getTokenData(loan.collateral.tokenAddress, loan.collateral.tokenId.toString(), 'sepolia');
+
+  console.log(underlying)
 
   return {
     ...loan,
@@ -23,7 +25,7 @@ async function getLoanDetailsForUser ( publicClient: PublicClient, user: `0x${st
 
 async function getLoanDetailsForMarket ( publicClient: PublicClient, index: BigInt ) {
   const loan = await publicClient.readContract({
-    address: PAWN_RECEIPT_ADDRESS,
+    address: RECEIPT_TOKEN_ADDRESS,
     abi: ReceiptTokenABI,
     functionName: 'getDetailsForMarket',
     args: [index.valueOf()]
@@ -39,7 +41,7 @@ async function getLoanDetailsForMarket ( publicClient: PublicClient, index: BigI
 
 async function getLoanDetailsExtended ( publicClient: PublicClient, loanId: BigInt, user: `0x${string}` ) {
   const loan = await publicClient.readContract({
-    address: PAWN_RECEIPT_ADDRESS,
+    address: RECEIPT_TOKEN_ADDRESS,
     abi: ReceiptTokenABI,
     functionName: 'getDetails',
     args: [loanId.valueOf()]
@@ -48,7 +50,7 @@ async function getLoanDetailsExtended ( publicClient: PublicClient, loanId: BigI
   const underlying = await getTokenData(loan.collateral.tokenAddress, loan.collateral.tokenId.toString(), 'sepolia');
 
   const bid = await publicClient.readContract({
-    address: PAWN_RECEIPT_ADDRESS,
+    address: RECEIPT_TOKEN_ADDRESS,
     abi: ReceiptTokenABI,
     functionName: 'getBidDetailsForUser',
     args: [user, loanId.valueOf()]
@@ -81,7 +83,7 @@ export function useLoansDataForUser() {
 
     async function fetch() {
       let balance = await client.readContract({
-        address: PAWN_RECEIPT_ADDRESS,
+        address: RECEIPT_TOKEN_ADDRESS,
         abi: ReceiptTokenABI,
         functionName: 'balanceOf',
         args: [wallet?.account.address!]
@@ -118,7 +120,7 @@ export function useLoansDataForMarket() {
 
     async function fetch() {
       let balance = await client.readContract({
-        address: PAWN_RECEIPT_ADDRESS,
+        address: RECEIPT_TOKEN_ADDRESS,
         abi: ReceiptTokenABI,
         functionName: 'totalSupply'
       });
@@ -131,7 +133,7 @@ export function useLoansDataForMarket() {
       }
 
       const loans = (await Promise.all(promises)).filter((value: Loan) => (
-        BigInt(Date.now() / 1000) - value.requestTimestamp > BigInt(24*60*60)
+        BigInt(Math.floor(Date.now() / 1000)) - value.requestTimestamp <= BigInt(24*60*60)
       ));
 
       setData({

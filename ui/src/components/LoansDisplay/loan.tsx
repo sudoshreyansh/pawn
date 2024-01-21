@@ -4,11 +4,83 @@ import SliderInput from "../SliderInput";
 import Counter from "../Counter";
 import { RAY, WAD, formatRayToDecimal, formatStringToDecimal, formatTimestampToString, formatWadToDecimal } from "@/lib/display";
 import Link from "next/link";
+import { Skeleton } from "../ui/skeleton";
+import { useToast } from "@/components/ui/use-toast";
+import { usePublicClient, useWalletClient } from 'wagmi'
+import { GHO_DEBT_TOKEN_ADDRESS, PAWN_POOL_ADDRESS } from "@/lib/address";
+import { CreditDelegationABI, PawnPoolABI } from "@/lib/abi";
+import { useState } from "react";
+import { sleep } from "@/lib/utils";
 
 export default function LoansDisplayForLoan({ loanId }: {loanId: string}) {
   const { loan, bid, success } = useLoanData(loanId)
+  const {toast} = useToast();
+  const {data: walletClient} = useWalletClient();
+  const publicClient = usePublicClient();
+  const [premium, setPremium] = useState(0);
+  const [amount, setAmount] = useState(0);
 
-  if ( !success ) return <></>;
+  async function handleApproveToken() {
+    if ( !walletClient ) return;
+    
+    const hash = await walletClient.writeContract({
+      address: GHO_DEBT_TOKEN_ADDRESS,
+      abi: CreditDelegationABI,
+      functionName: 'approveDelegation',
+      args: [
+        PAWN_POOL_ADDRESS,
+        BigInt(amount + 50) * WAD / BigInt(100)
+      ]
+    })
+
+    const {dismiss} = toast({
+      description: <div className="font-[Inter]">Please wait. Processing transaction.</div>
+    });
+
+    await sleep();
+    
+    await publicClient.waitForTransactionReceipt({ hash });
+    
+    dismiss();
+    toast({
+      description: <div className="font-[Inter]">Transaction processed. Please place the bid.</div>
+    });
+  }
+
+  async function handleSubmit() {
+    if ( !walletClient ) return;
+    
+    const hash = await walletClient.writeContract({
+      address: PAWN_POOL_ADDRESS,
+      abi: PawnPoolABI,
+      functionName: 'placeBid',
+      args: [
+        BigInt(loanId),
+        BigInt(premium) * RAY / BigInt(10),
+        BigInt(amount) * WAD / BigInt(100)
+      ]
+    })
+
+    const {dismiss} = toast({
+      description: <div className="font-[Inter]">Please wait. Processing transaction.</div>
+    });
+    
+    await sleep();
+
+    await publicClient.waitForTransactionReceipt({ hash });
+    
+    dismiss();
+    toast({
+      description: <div className="font-[Inter]">Transaction processed. Your bid has been submitted.</div>
+    });
+  }
+
+  if ( !success ) return (
+    <div className="py-2">
+      <Skeleton className="w-60 h-4 mb-2" />
+      <Skeleton className="w-96 h-4" />
+    </div>
+  );
 
   return (
     <div className='px-12 mb-12 mt-4'>
@@ -40,7 +112,7 @@ export default function LoansDisplayForLoan({ loanId }: {loanId: string}) {
 
             <div className='mt-8 rounded-lg py-4 px-6 border border-solid border-slate-200'>
               <div className='text-xl font-semibold pb-4'>
-                Bidding ends in: <Counter endTime={parseInt((loan?.requestTimestamp! + loan?.expiry!).toString())} />
+                Bidding ends in: <Counter endTime={parseInt((loan?.requestTimestamp! + BigInt(24*60*60)).toString())} />
               </div>
               {
                 !(bid && bid.id > 0) ?
@@ -54,6 +126,7 @@ export default function LoansDisplayForLoan({ loanId }: {loanId: string}) {
                     step={100}
                     title={"Amount"}
                     formatValue={v => `${(v/100).toFixed(2)} GHO`}
+                    onChange={(v) => setAmount(v)}
                     />
                 </div>
                 <div className='pt-4'>
@@ -64,9 +137,11 @@ export default function LoansDisplayForLoan({ loanId }: {loanId: string}) {
                     step={1}
                     title={"Rate"}
                     formatValue={v => `${(v/10).toFixed(2)}%`}
+                    onChange={(v) => setPremium(v)}
                     />
                 </div>
-                <Button className='mt-6'>Place Bid</Button>
+                <Button variant="outline" onClick={() => handleApproveToken()} className='mt-6'>Delegate Credit</Button>
+                <Button onClick={() => handleSubmit()} className='mt-6'>Place Bid</Button>
                 </>
               ) :
                 (

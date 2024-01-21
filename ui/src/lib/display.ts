@@ -23,9 +23,9 @@ export function formatRayToDecimal(ray: BigInt, decimalPlaces = 1): string {
 
 export function formatTimestampToString(timestamp: BigInt): string {
   const timestamp_ = parseInt(timestamp.toString());
-  const days = Math.floor(timestamp_ / (1000 * 60 * 60 * 24));
-  const hours = Math.floor(timestamp_ / (1000 * 60 * 60));
-  const minutes = Math.floor(timestamp_ / (1000 * 60));
+  const days = Math.floor(timestamp_ / (60 * 60 * 24));
+  const hours = Math.floor(timestamp_ / (60 * 60));
+  const minutes = Math.floor(timestamp_ / (60));
 
   if ( days != 0 ) {
     if ( days == 1 ) return '1 day';

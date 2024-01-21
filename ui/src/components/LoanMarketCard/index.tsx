@@ -1,6 +1,7 @@
 import { Loan } from "@/lib/types"
 import { formatWadToDecimal, formatRayToDecimal, formatTimestampToString } from "@/lib/display"
 import { Button } from '@/components/ui/button'
+import Link from "next/link"
 
 export default function LoanMarketCard({ loan }: {
   loan: Loan
@@ -24,7 +25,9 @@ export default function LoanMarketCard({ loan }: {
             <span className="">{formatTimestampToString(loan.expiry)}</span>
           </div>
         </div>
-        <Button variant="outline">View Details</Button>
+        <Button variant="outline" asChild>
+          <Link href={`/market/${loan.id.toString()}`}>View Details</Link>
+        </Button>
       </div>
     </div>
   )

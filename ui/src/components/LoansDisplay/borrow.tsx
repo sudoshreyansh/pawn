@@ -23,6 +23,8 @@ export default function LoansDisplayForBorrow() {
     )
   }
 
+  console.log(loans);
+
   return (
     <>
       {
